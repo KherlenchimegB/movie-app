@@ -1,103 +1,140 @@
-import Image from "next/image";
+"use client";
+import React, { useEffect, useState } from "react";
+import Navigation from "@/components/components/Navigation";
+import Footer from "@/components/components/Footer";
+import { Search, MapPin } from "lucide-react";
+import { MovieCard, MovieCategory } from "../components/components/MovieCard";
+const token =
+  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+export type Movie = {
+  id: number;
+  title: string;
+  vote_average: number;
+  overview: string;
+  poster_path: string;
+  adult: boolean;
+  backdrop_path: string;
+  genre_ids: [];
+  video: boolean;
+  dates: {};
+  release_date: Date;
+  popularity: number;
+  original_language: string;
+};
+type MovieResponse = {
+  results: Movie[];
+};
+const SWR = () => {
+  const [moviePopularData, setMoviePopularData] = useState<MovieResponse>({
+    results: [],
+  });
+  const [movieUpcomingData, setMovieUpcomingData] = useState<MovieResponse>({
+    results: [],
+  });
+  const [movieTopRatedData, setMovieTopRatedData] = useState<MovieResponse>({
+    results: [],
+  });
+  useEffect(() => {
+    fetch(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=1`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setMoviePopularData(data);
+        console.log("popular data", data);
+      });
+  }, []);
+  useEffect(() => {
+    fetch(`https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setMovieUpcomingData(data);
+        console.log(
+          "upcoming data",
+          data,
+          "poster",
+          movieUpcomingData?.results[0]?.poster_path
+        );
+      });
+  }, []);
+  useEffect(() => {
+    fetch(
+      `https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setMovieTopRatedData(data);
+        console.log("toprated data", data);
+      });
+  }, []);
 
-export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-wrap gap-3 p-2">
+      <Navigation />
+      <div className="flex items-center justify-center h-[600px] w-full ">
+        <div
+          className="w-full h-full bg-center bg-no-repeat bg-contain"
+          style={{
+            backgroundImage: `url("https://image.tmdb.org/t/p/w400${movieUpcomingData?.results[0]?.backdrop_path}")`,
+          }}
+        ></div>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="flex flex-col w-full border-none gap-14 px-[80px]">
+        <MovieCategory title={"Popular"} />
+        <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
+          {moviePopularData?.results?.slice(0, 10).map((movie) => {
+            return (
+              <MovieCard
+                key={movie.id}
+                title={movie.title}
+                image={movie.poster_path}
+                rank={movie.vote_average}
+              />
+            );
+          })}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className="flex flex-col w-full border-none gap-14 px-[80px]">
+        <MovieCategory title={"Upcoming"} />
+        <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
+          {movieUpcomingData?.results?.slice(0, 10).map((movie) => {
+            return (
+              <MovieCard
+                key={movie.id}
+                title={movie.title}
+                image={movie.poster_path}
+                rank={movie.vote_average}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-col w-full border-none gap-14 px-[80px]">
+        <MovieCategory title={"Top rated"} />
+        <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
+          {movieTopRatedData?.results?.slice(0, 10).map((movie) => {
+            return (
+              <MovieCard
+                key={movie.id}
+                title={movie.title}
+                image={movie.poster_path}
+                rank={movie.vote_average}
+              />
+            );
+          })}
+        </div>
+      </div>
+      <Footer />
     </div>
   );
-}
+};
+
+export default SWR;
