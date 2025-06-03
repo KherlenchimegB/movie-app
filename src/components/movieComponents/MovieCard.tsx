@@ -1,5 +1,4 @@
-import MovieDetails from "@/app/moviedetials_old/page";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 export const MovieCard = ({
   title,
   image,
@@ -20,7 +19,7 @@ export const MovieCard = ({
         alt="Poster"
       />
       <div className="flex items-center justify-start gap-2">
-        <img src="./star.svg" alt="star" className="h-4" />
+        <Star className="fill-[#fcf403] text-[#fcf403]" />
         <p className="text-xl">{Math.floor(rank)}/10</p>
       </div>
       <h1>{title}</h1>

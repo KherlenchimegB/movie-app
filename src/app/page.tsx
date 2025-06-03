@@ -1,9 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Navigation from "@/components/components/Navigation";
-import Footer from "@/components/components/Footer";
-import { Search, MapPin } from "lucide-react";
-import { MovieCard, MovieCategory } from "../components/components/MovieCard";
+import Navigation from "@/components/movieComponents/Navigation";
+import Footer from "@/components/movieComponents/Footer";
+import {
+  MovieCard,
+  MovieCategory,
+} from "../components/movieComponents/MovieCard";
+import Link from "next/link";
+
 const token =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
 export type Movie = {
@@ -41,7 +45,6 @@ const SWR = () => {
       .then((response) => response.json())
       .then((data) => {
         setMoviePopularData(data);
-        console.log("popular data", data);
       });
   }, []);
   useEffect(() => {
@@ -51,25 +54,16 @@ const SWR = () => {
       .then((response) => response.json())
       .then((data) => {
         setMovieUpcomingData(data);
-        console.log(
-          "upcoming data",
-          data,
-          "poster",
-          movieUpcomingData?.results[0]?.poster_path
-        );
       });
   }, []);
   useEffect(() => {
     fetch(
       `https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     )
       .then((response) => response.json())
       .then((data) => {
         setMovieTopRatedData(data);
-        console.log("toprated data", data);
       });
   }, []);
 
@@ -90,12 +84,14 @@ const SWR = () => {
         <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
           {moviePopularData?.results?.slice(0, 10).map((movie) => {
             return (
-              <MovieCard
-                key={movie.id}
-                title={movie.title}
-                image={movie.poster_path}
-                rank={movie.vote_average}
-              />
+              <Link href={`/movies/${movie.id}`} key={movie.id}>
+                <MovieCard
+                  key={movie.id}
+                  title={movie.title}
+                  image={movie.poster_path}
+                  rank={movie.vote_average}
+                />
+              </Link>
             );
           })}
         </div>
@@ -106,12 +102,14 @@ const SWR = () => {
         <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
           {movieUpcomingData?.results?.slice(0, 10).map((movie) => {
             return (
-              <MovieCard
-                key={movie.id}
-                title={movie.title}
-                image={movie.poster_path}
-                rank={movie.vote_average}
-              />
+              <Link href={`/movies/${movie.id}`} key={movie.id}>
+                <MovieCard
+                  key={movie.id}
+                  title={movie.title}
+                  image={movie.poster_path}
+                  rank={movie.vote_average}
+                />
+              </Link>
             );
           })}
         </div>
@@ -122,12 +120,14 @@ const SWR = () => {
         <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
           {movieTopRatedData?.results?.slice(0, 10).map((movie) => {
             return (
-              <MovieCard
-                key={movie.id}
-                title={movie.title}
-                image={movie.poster_path}
-                rank={movie.vote_average}
-              />
+              <Link href={`/movies/${movie.id}`} key={movie.id}>
+                <MovieCard
+                  key={movie.id}
+                  title={movie.title}
+                  image={movie.poster_path}
+                  rank={movie.vote_average}
+                />
+              </Link>
             );
           })}
         </div>
