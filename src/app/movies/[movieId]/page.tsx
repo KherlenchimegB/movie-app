@@ -19,6 +19,7 @@ export default async function MovieDetails({
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const dataCredit = await responseCredit.json();
+  console.log("dataCredit", dataCredit);
 
   const responseDetails = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}?language=en-US`,
@@ -92,13 +93,8 @@ export default async function MovieDetails({
 
         <div className="flex w-full gap-3">
           <span className="font-bold">Stars</span>
-          {dataCredit?.cast?.map(
-            (cast: { cast_id: number; original_name: string }) => {
-              if (cast.cast_id === 1 || cast.cast_id === 2) {
-                return <span className="px-2 ">{cast.original_name}</span>;
-              }
-            }
-          )}
+          <span className="px-2 ">{dataCredit?.cast[0].original_name}</span>
+          <span className="px-2 ">{dataCredit?.cast[1].original_name}</span>
         </div>
         <div className="w-full border-t-2"></div>
       </div>

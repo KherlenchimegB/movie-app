@@ -16,6 +16,7 @@ const Navigation = () => {
           typeof="search"
           className="border rounded-md border-[#E4E4E7] px-4 py-2"
           placeholder="Search..."
+          onClick={() => {}}
         />
       </div>
 
