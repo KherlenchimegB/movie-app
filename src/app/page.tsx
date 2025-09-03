@@ -6,11 +6,12 @@ import {
   MovieCard,
   MovieCategory,
 } from "../components/movieComponents/MovieCard";
+import MovieCarousel from "@/components/movieComponents/MovieCarousel";
 import Link from "next/link";
-import { CarouselDemo } from "@/components/movieComponents/UpcomingScroll";
 
 const token =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+
 export type Movie = {
   id: number;
   title: string;
@@ -26,9 +27,11 @@ export type Movie = {
   popularity: number;
   original_language: string;
 };
+
 type MovieResponse = {
   results: Movie[];
 };
+
 const SWR = () => {
   const [moviePopularData, setMoviePopularData] = useState<MovieResponse>({
     results: [],
@@ -42,6 +45,10 @@ const SWR = () => {
   const [movieGenresData, setMovieGenresData] = useState<MovieResponse>({
     results: [],
   });
+  const [movieNowPlayingData, setMovieNowPlayingData] = useState<MovieResponse>({
+    results: [],
+  });
+
   useEffect(() => {
     fetch(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=1`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -51,6 +58,7 @@ const SWR = () => {
         setMoviePopularData(data);
       });
   }, []);
+
   useEffect(() => {
     fetch(`https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -60,6 +68,7 @@ const SWR = () => {
         setMovieUpcomingData(data);
       });
   }, []);
+
   useEffect(() => {
     fetch(
       `https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1`,
@@ -68,9 +77,9 @@ const SWR = () => {
       .then((response) => response.json())
       .then((data) => {
         setMovieTopRatedData(data);
-        console.log("movieTopRatedData", movieTopRatedData);
       });
   }, []);
+
   useEffect(() => {
     fetch(`https://api.themoviedb.org/3/genre/movie/list?language=en`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -78,32 +87,37 @@ const SWR = () => {
       .then((response) => response.json())
       .then((data) => {
         setMovieGenresData(data);
-        console.log("movieGenresData", movieGenresData);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch(`https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Now Playing API Response:', data);
+        setMovieNowPlayingData(data);
+      })
+      .catch((error) => {
+        console.error('Now Playing API Error:', error);
       });
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 p-2 w-screen ">
+    <div className="flex flex-col gap-3 p-2 w-screen">
       <Navigation />
 
-      <div className="flex items-center justify-start h-[920px] overflow-scroll w-full snap-x snap-x-mandatory scroll-smooth gap-2.5">
-        <div className=" flex-row flex snap-center">
-          {movieUpcomingData?.results.slice(0, 5).map((result) => {
-            return (
-              <div
-                className="w-[2400px] h-[900px] bg-center bg-no-repeat bg-cover overflow-hidden mt-2.5 snap-center"
-                style={{
-                  backgroundImage: `url("https://image.tmdb.org/t/p/w400${result.backdrop_path}")`,
-                }}
-              ></div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Hero section - Now Playing movies carousel */}
+      <MovieCarousel 
+        movies={movieNowPlayingData?.results?.slice(0, 3) || []}
+        title="upcoming"
+      />
 
-      <div className="flex flex-col w-full border-none gap-14 px-[80px]">
+      {/* Popular Movies Section */}
+      <div className="flex flex-col w-full border-none gap-8 md:gap-14 px-4 md:px-[80px]">
         <MovieCategory title={"Popular"} />
-        <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
+        <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
           {moviePopularData?.results?.slice(0, 10).map((movie) => {
             return (
               <Link href={`/movies/${movie.id}`} key={movie.id}>
@@ -119,9 +133,10 @@ const SWR = () => {
         </div>
       </div>
 
-      <div className="flex flex-col w-full border-none gap-14 px-[80px]">
+      {/* Upcoming Movies Section */}
+      <div className="flex flex-col w-full border-none gap-8 md:gap-14 px-4 md:px-[80px]">
         <MovieCategory title={"Upcoming"} />
-        <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
+        <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
           {movieUpcomingData?.results?.slice(0, 10).map((movie) => {
             return (
               <Link href={`/movies/${movie.id}`} key={movie.id}>
@@ -137,9 +152,10 @@ const SWR = () => {
         </div>
       </div>
 
-      <div className="flex flex-col w-full border-none gap-14 px-[80px]">
+      {/* Top Rated Movies Section */}
+      <div className="flex flex-col w-full border-none gap-8 md:gap-14 px-4 md:px-[80px]">
         <MovieCategory title={"Top rated"} />
-        <div className="grid w-full grid-cols-5 grid-rows-2 gap-5">
+        <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
           {movieTopRatedData?.results?.slice(0, 10).map((movie) => {
             return (
               <Link href={`/movies/${movie.id}`} key={movie.id}>
@@ -154,6 +170,7 @@ const SWR = () => {
           })}
         </div>
       </div>
+
       <Footer />
     </div>
   );
