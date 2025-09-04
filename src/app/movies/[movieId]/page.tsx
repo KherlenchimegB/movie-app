@@ -37,7 +37,7 @@ export default async function MovieDetails({
 
   return (
     <div className="flex flex-wrap gap-3 px-48">
-      <Navigation />
+      <Navigation showSearch={false} />
 
       <div className="flex flex-col w-full border-none gap-12 px-[80px]">
         <ShowDetails
@@ -68,9 +68,9 @@ export default async function MovieDetails({
         <div className="w-full flex gap-3">
           <span className="font-bold">Director</span>
           {dataCredit?.crew?.map(
-            (cast: { job: string; original_name: string }) => {
+            (cast: { job: string; original_name: string }, index: number) => {
               if (cast.job === "Director") {
-                return <span className="px-2 ">{cast.original_name}</span>;
+                return <span key={`director-${index}`} className="px-2 ">{cast.original_name}</span>;
               }
             }
           )}

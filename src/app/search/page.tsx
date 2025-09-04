@@ -1,130 +1,138 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { searchMovies } from '@/lib/api';
-import { Movie, SearchResponse } from '@/types/movie.types';
-import { MovieCard } from '@/components/movieComponents/MovieCard';
+import { useSearchParams } from 'next/navigation';
 import Navigation from '@/components/movieComponents/Navigation';
+import { Movie } from '@/types/movie.types';
+import { MovieCard } from '@/components/movieComponents/MovieCard';
 import Footer from '@/components/movieComponents/Footer';
-import Pagination from '@/components/movieComponents/Pagination';
-import Link from 'next/link';
 
-// Search page
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const query = searchParams.get('q') || '';
-  const pageParam = searchParams.get('page') || '1';
   
-  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(parseInt(pageParam));
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Change page
+  const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!query) return;
+
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=${currentPage}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await response.json();
+        setMovies(data.results || []);
+        setTotalPages(Math.min(data.total_pages || 0, 500));
+      } catch (error) {
+        console.error('Search error:', error);
+        setMovies([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [query, currentPage, token]);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    router.push(`/search?q=${encodeURIComponent(query)}&page=${page}`);
+    window.scrollTo(0, 0);
   };
 
-  // Perform search
-  useEffect(() => {
-    if (query) {
-      performSearch(query, currentPage);
-    }
-  }, [query, currentPage]);
-
-  const performSearch = async (searchQuery: string, page: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const results = await searchMovies(searchQuery, page);
-      setSearchResults(results);
-    } catch (err) {
-      setError('Search failed');
-      console.error('Search error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg">Searching...</div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg text-red-600">{error}</div>
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex flex-col min-h-screen">
+      <Navigation 
+        showSearch={true} 
+        onGenreSelect={(genre) => {
+          // Genre сонгох үед genre page руу шилжих
+          window.location.href = `/genre/${genre.id}`;
+        }}
+      />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            Search Results
-          </h1>
-          <p className="text-gray-600 text-sm md:text-base">
-            Found {searchResults?.total_results || 0} movies for "{query}"
-          </p>
-          {searchResults && (
-            <p className="text-gray-500 text-sm mt-1">
-              Page {currentPage} of {searchResults.total_pages} (20 movies per page)
-            </p>
-          )}
-        </div>
-
-        {searchResults && searchResults.results.length > 0 ? (
+      <div className="flex-1 p-6">
+        <h1 className="text-2xl font-bold mb-6 text-gray-900">Search Results for "{query}"</h1>
+        
+        {movies.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No movies found for "{query}"</p>
+          </div>
+        ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
-              {searchResults.results.map((movie: Movie) => (
-                <Link href={`/movies/${movie.id}`} key={movie.id}>
-                  <MovieCard
-                    title={movie.title}
-                    image={movie.poster_path}
-                    rank={movie.vote_average}
-                  />
-                </Link>
+            <div className="grid grid-cols-4 gap-6">
+              {movies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  title={movie.title}
+                  image={movie.poster_path}
+                  rank={movie.vote_average}
+                />
               ))}
             </div>
-            
+
             {/* Pagination */}
-            <Pagination
-              currentPage={currentPage}
-              totalPages={searchResults.total_pages}
-              onPageChange={handlePageChange}
-            />
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  ← Previous
+                </button>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = i + 1;
+                  if (page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2)) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 border rounded-md transition-colors ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (page === currentPage - 3 || page === currentPage + 3) {
+                    return <span key={page} className="px-2">...</span>;
+                  }
+                  return null;
+                })}
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </>
-        ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-4">
-              {query ? 'No movies found for this search' : 'Please enter a search term'}
-            </div>
-            <p className="text-gray-400">
-              {query ? 'Try searching with different keywords' : 'Use the search bar at the top'}
-            </p>
-          </div>
         )}
       </div>
-
+      
       <Footer />
     </div>
   );
