@@ -20,7 +20,7 @@ interface MovieCarouselProps {
 }
 
 // Movie carousel component
-export default function MovieCarousel({ movies, title }: MovieCarouselProps) {
+export default function MovieCarousel({ movies }: MovieCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTrailerModalOpen, setIsTrailerModalOpen] = useState(false);
 
@@ -36,16 +36,13 @@ export default function MovieCarousel({ movies, title }: MovieCarouselProps) {
   };
 
   const prevMovie = () => {
-    console.log('Prev clicked, current index:', currentIndex, 'total movies:', movies.length);
     setCurrentIndex((prev) => {
       const newIndex = (prev - 1 + movies.length) % movies.length;
-      console.log('New index:', newIndex);
       return newIndex;
     });
   };
 
   const goToMovie = (index: number) => {
-    console.log('Go to movie:', index);
     setCurrentIndex(index);
   };
 
@@ -128,7 +125,7 @@ export default function MovieCarousel({ movies, title }: MovieCarouselProps) {
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={openTrailerModal}
-                className="flex items-center gap-2 bg-white hover:bg-red-700 hover:text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-700 hover:text-white px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 <Play className="w-5 h-5" />
                 Watch Trailer

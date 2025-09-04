@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-export function CarouselDemo(props) {
+export function CarouselDemo(props: Record<string, unknown>) {
   return (
     <Carousel className="w-full ">
       <CarouselContent>

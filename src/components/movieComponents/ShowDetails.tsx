@@ -33,9 +33,6 @@ const ShowDetails = ({
   movieId,
   genres = [],
   overview = "",
-  director = "",
-  writers = [],
-  stars = [],
 }: ShowDetailsProps) => {
   const [isTrailerModalOpen, setIsTrailerModalOpen] = useState(false);
 

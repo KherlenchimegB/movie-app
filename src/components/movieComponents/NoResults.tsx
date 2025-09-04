@@ -21,10 +21,10 @@ export default function NoResults({ query }: NoResultsProps) {
           No results found
         </h3>
         <p className="text-lg text-gray-600 mb-2">
-          We couldn't find any movies matching
+          We couldn&apos;t find any movies matching
         </p>
         <p className="text-lg font-medium text-gray-800">
-          "{query}"
+          &quot;{query}&quot;
         </p>
       </div>
       

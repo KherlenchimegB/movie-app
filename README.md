@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment Setup
+
+Before running the project, you need to set up your environment variables:
+
+1. Create a `.env` file in the root directory
+2. Add your TMDB API token:
+
+```bash
+# TMDB API Token
+NEXT_PUBLIC_TMDB_TOKEN=your_tmdb_token_here
+```
+
+To get a TMDB API token:
+1. Go to [TMDB API Settings](https://www.themoviedb.org/settings/api)
+2. Create an account or log in
+3. Request an API key
+4. Copy the API key and paste it in your `.env.local` file
+
 ## Getting Started
 
 First, run the development server:

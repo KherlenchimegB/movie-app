@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { X, Play, Pause, Volume2, VolumeX, Settings, Maximize, SkipBack, SkipForward } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Play, Volume2, VolumeX, Settings, Maximize, SkipBack, SkipForward } from 'lucide-react';
 
 interface TrailerModalProps {
   isOpen: boolean;
@@ -23,16 +23,10 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+  // TMDB API Token - Environment variable
+  const token = process.env.NEXT_PUBLIC_TMDB_TOKEN || "";
 
-  // Киноны trailer-уудыг татах
-  useEffect(() => {
-    if (isOpen && movieId) {
-      fetchVideos();
-    }
-  }, [isOpen, movieId]);
-
-  const fetchVideos = async () => {
+  const fetchVideos = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -50,12 +44,18 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
       if (trailerVideos.length > 0) {
         setSelectedVideo(trailerVideos[0]);
       }
-    } catch (error) {
-      console.error('Error fetching videos:', error);
+    } catch {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [movieId, token]);
+
+  // Киноны trailer-уудыг татах
+  useEffect(() => {
+    if (isOpen && movieId) {
+      fetchVideos();
+    }
+  }, [isOpen, movieId, fetchVideos]);
 
   const handleVideoSelect = (video: Video) => {
     setSelectedVideo(video);
@@ -73,15 +73,15 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-      <div className={`bg-white rounded-lg overflow-hidden ${isFullscreen ? 'w-full h-full' : 'w-full max-w-4xl max-h-[80vh]'}`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-lg overflow-hidden ${isFullscreen ? 'w-full h-full' : 'w-full max-w-4xl max-h-[80vh]'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-gray-100">
+        <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-700">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-gray-800">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
               {movieTitle}: Trailer
             </h2>
             {selectedVideo && (
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {selectedVideo.name}
               </span>
             )}
@@ -89,16 +89,16 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
           <div className="flex items-center gap-2">
             <button
               onClick={toggleFullscreen}
-              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
               title="Toggle fullscreen"
             >
-              <Maximize className="w-5 h-5" />
+              <Maximize className="w-5 h-5 text-gray-800 dark:text-gray-200" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 text-gray-800 dark:text-gray-200" />
             </button>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
           {/* Video Player */}
           <div className="flex-1 p-4">
             {isLoading ? (
-              <div className="flex items-center justify-center h-64 bg-gray-200 rounded-lg">
+              <div className="flex items-center justify-center h-64 bg-gray-200 dark:bg-gray-700 rounded-lg">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
             ) : selectedVideo ? (
@@ -147,16 +147,16 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-64 bg-gray-200 rounded-lg">
-                <p className="text-gray-600">Trailer олдсонгүй</p>
+              <div className="flex items-center justify-center h-64 bg-gray-200 dark:bg-gray-700 rounded-lg">
+                <p className="text-gray-600 dark:text-gray-400">Trailer олдсонгүй</p>
               </div>
             )}
           </div>
 
           {/* Video List */}
           {videos.length > 1 && (
-            <div className="w-full lg:w-80 p-4 bg-gray-50 border-l">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800">Бусад Trailer-ууд</h3>
+            <div className="w-full lg:w-80 p-4 bg-gray-50 dark:bg-gray-700 border-l dark:border-gray-600">
+              <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Бусад Trailer-ууд</h3>
               <div className="space-y-3">
                 {videos.map((video, index) => (
                   <button
@@ -164,19 +164,19 @@ export default function TrailerModal({ isOpen, onClose, movieId, movieTitle }: T
                     onClick={() => handleVideoSelect(video)}
                     className={`w-full p-3 text-left rounded-lg transition-colors ${
                       selectedVideo?.key === video.key
-                        ? 'bg-blue-100 border-blue-300 border'
-                        : 'bg-white hover:bg-gray-100 border border-gray-200'
+                        ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600 border'
+                        : 'bg-white dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-16 h-12 bg-gray-300 rounded flex items-center justify-center">
-                        <Play className="w-5 h-5 text-gray-600" />
+                      <div className="w-16 h-12 bg-gray-300 dark:bg-gray-500 rounded flex items-center justify-center">
+                        <Play className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-800 truncate">
+                        <p className="font-medium text-sm text-gray-800 dark:text-gray-100 truncate">
                           {video.name}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           Trailer {index + 1}
                         </p>
                       </div>

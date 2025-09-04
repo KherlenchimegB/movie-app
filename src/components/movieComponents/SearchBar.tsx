@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, X, ChevronDown } from 'lucide-react';
+import { Movie } from '@/types/movie.types';
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
   onClear?: () => void;
   isSearching: boolean;
-  searchResults: any[];
+  searchResults: Movie[];
   searchQuery: string;
   onActiveStateChange?: (isActive: boolean) => void;
 }
@@ -16,7 +17,6 @@ export default function SearchBar({
   onSearch,
   onClear,
   isSearching,
-  searchResults,
   searchQuery,
   onActiveStateChange
 }: SearchBarProps) {

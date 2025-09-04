@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import SearchBar from "./SearchBar";
 import GenreDropdown from "./GenreDropdown";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Movie } from "@/types/movie.types";
 
 interface NavigationProps {
   onSearch?: (query: string) => void;
   onClear?: () => void;
   isSearching?: boolean;
-  searchResults?: any[];
+  searchResults?: Movie[];
   searchQuery?: string;
   showSearch?: boolean;
   onGenreSelect?: (genre: { id: number; name: string }) => void;
@@ -25,6 +27,7 @@ const Navigation = ({
   onGenreSelect
 }: NavigationProps = {}) => {
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   // Event handler функцуудыг дотор нь тодорхойлох
   const handleSearch = (query: string) => {
     if (onSearch) {
@@ -58,7 +61,7 @@ const Navigation = ({
   };
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white dark:bg-gray-900">
       {/* Mobile Layout */}
       <div className="flex flex-row md:hidden items-center justify-between px-4 py-3 h-[60px]">
         {/* Logo - Left side (hidden when search is active) */}
@@ -68,7 +71,7 @@ const Navigation = ({
             className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
           >
             <img src="../film.svg" alt="film logo" className="w-[20px] h-[20px]" />
-            <span className="text-[18px] font-bold text-indigo-700">Movie Z</span>
+            <span className="text-[18px] font-bold text-indigo-700 dark:text-indigo-400">Movie Z</span>
           </button>
         )}
 
@@ -85,9 +88,16 @@ const Navigation = ({
             />
           )}
           
-          <div className="flex items-center justify-center w-[36px] h-[36px] border border-[#E4E4E7] rounded-md">
-            <Moon className="w-[18px] h-[18px]" />
-          </div>
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center w-[36px] h-[36px] border border-[#E4E4E7] dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            {theme === 'light' ? (
+              <Moon className="w-[18px] h-[18px] text-gray-600 dark:text-gray-300" />
+            ) : (
+              <Sun className="w-[18px] h-[18px] text-yellow-500" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -99,7 +109,7 @@ const Navigation = ({
             className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
           >
             <img src="../film.svg" alt="film logo" className="w-[20px] h-[20px]" />
-            <span className="text-[16px] font-bold text-indigo-700">Movie Z</span>
+            <span className="text-[16px] font-bold text-indigo-700 dark:text-indigo-400">Movie Z</span>
           </button>
         </div>
         <div className="flex flex-row justify-between gap-2 w-auto">
@@ -115,9 +125,16 @@ const Navigation = ({
           )}
         </div>
 
-        <div className="flex items-center justify-center w-[36px] h-[36px] border border-[#E4E4E7] rounded-md">
-          <Moon className="w-[18px] h-[18px]" />
-        </div>
+        <button
+          onClick={toggleTheme}
+          className="flex items-center justify-center w-[36px] h-[36px] border border-[#E4E4E7] dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          {theme === 'light' ? (
+            <Moon className="w-[18px] h-[18px] text-gray-600 dark:text-gray-300" />
+          ) : (
+            <Sun className="w-[18px] h-[18px] text-yellow-500" />
+          )}
+        </button>
       </div>
     </div>
   );

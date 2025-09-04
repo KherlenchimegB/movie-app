@@ -8,7 +8,6 @@ import { MovieCard } from '@/components/movieComponents/MovieCard';
 import Footer from '@/components/movieComponents/Footer';
 import Toast from '@/components/movieComponents/Toast';
 import NoResults from '@/components/movieComponents/NoResults';
-import { ArrowRight } from 'lucide-react';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -21,7 +20,8 @@ export default function SearchPage() {
   const [totalResults, setTotalResults] = useState(0);
   const [showToast, setShowToast] = useState(false);
 
-  const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+  // TMDB API Token - Environment variable
+  const token = process.env.NEXT_PUBLIC_TMDB_TOKEN || "";
 
   // Жанрын жагсаалт
   const genres = [
@@ -78,8 +78,7 @@ export default function SearchPage() {
         if (data.total_results === 0 && query.trim()) {
           setShowToast(true);
         }
-      } catch (error) {
-        console.error('Search error:', error);
+      } catch {
         setMovies([]);
         if (query.trim()) {
           setShowToast(true);
@@ -114,7 +113,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <Navigation 
         showSearch={true} 
         onGenreSelect={handleGenreClick}
@@ -130,12 +129,12 @@ export default function SearchPage() {
       
       <div className="flex-1 flex flex-col lg:flex-row">
         {/* Search Results (Mobile: First, Desktop: Left) */}
-        <div className="flex-1 p-4 md:p-6 border-b lg:border-b-0 lg:border-r border-gray-200 order-1 lg:order-1">
+        <div className="flex-1 p-4 md:p-6 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 order-1 lg:order-1">
           <div className="mb-4 md:mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Search results</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Search results</h1>
             {query && (
-              <p className="text-base md:text-lg text-gray-600">
-                {totalResults} results for "{query}"
+              <p className="text-base md:text-lg text-gray-600 dark:text-gray-400">
+                {totalResults} results for &quot;{query}&quot;
               </p>
             )}
           </div>
@@ -186,7 +185,7 @@ export default function SearchPage() {
                         className={`px-2 md:px-3 py-2 text-sm font-medium rounded-md ${
                           currentPage === pageNum
                             ? 'bg-blue-600 text-white'
-                            : 'text-gray-600 bg-white border border-gray-300 hover:bg-gray-50'
+                            : 'text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
                         {pageNum}
@@ -201,7 +200,7 @@ export default function SearchPage() {
                   {totalPages > 5 && currentPage < totalPages - 2 && (
                     <button
                       onClick={() => handlePageChange(totalPages)}
-                      className="px-2 md:px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-2 md:px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
                       {totalPages}
                     </button>
@@ -210,7 +209,7 @@ export default function SearchPage() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 md:px-4 py-2 text-sm md:text-base border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                   >
                     Next →
                   </button>
@@ -221,10 +220,10 @@ export default function SearchPage() {
         </div>
 
         {/* Genre List (Mobile: Second, Desktop: Right) */}
-        <div className="w-full lg:w-80 p-4 md:p-6 bg-gray-50 order-2 lg:order-2">
+        <div className="w-full lg:w-80 p-4 md:p-6 bg-gray-50 dark:bg-gray-800 order-2 lg:order-2">
           <div className="mb-4 md:mb-6">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">Search by genre</h2>
-            <p className="text-xs md:text-sm text-gray-600">See lists of movies by genre</p>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Search by genre</h2>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">See lists of movies by genre</p>
           </div>
           
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:space-y-2 lg:gap-0">
@@ -232,12 +231,12 @@ export default function SearchPage() {
               <button
                 key={genre.id}
                 onClick={() => handleGenreClick(genre)}
-                className="flex items-center justify-between p-2 lg:p-3 text-left hover:bg-white hover:shadow-sm rounded-lg transition-all duration-200 border border-gray-200 bg-white cursor-pointer group"
+                className="flex items-center justify-between p-2 lg:p-3 text-left hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm rounded-lg transition-all duration-200 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer group"
               >
-                <span className="text-xs lg:text-sm font-medium text-gray-800 group-hover:text-blue-600 transition-colors truncate">
+                <span className="text-xs lg:text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition-colors truncate">
                   {genre.name}
                 </span>
-                <ArrowRight className="w-3 h-3 lg:w-4 lg:h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />
+                <span className="text-gray-400 dark:text-gray-500 group-hover:text-blue-600 transition-colors flex-shrink-0 text-sm">&gt;</span>
               </button>
             ))}
           </div>

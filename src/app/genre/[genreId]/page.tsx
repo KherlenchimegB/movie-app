@@ -15,7 +15,8 @@ export default function GenrePage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+  // TMDB API Token - Environment variable
+  const token = process.env.NEXT_PUBLIC_TMDB_TOKEN || "";
 
   useEffect(() => {
     const fetchGenreMovies = async () => {
@@ -31,7 +32,7 @@ export default function GenrePage() {
           }
         );
         const genreData = await genreResponse.json();
-        const genre = genreData.genres?.find((g: any) => g.id.toString() === genreId);
+        const genre = genreData.genres?.find((g: { id: number; name: string }) => g.id.toString() === genreId);
         setGenreName(genre?.name || 'Genre');
 
         // Дараа нь кинонуудыг олох
@@ -44,8 +45,7 @@ export default function GenrePage() {
         const data = await response.json();
         setMovies(data.results || []);
         setTotalPages(Math.min(data.total_pages || 0, 500));
-      } catch (error) {
-        console.error('Error fetching genre movies:', error);
+      } catch {
       } finally {
         setIsLoading(false);
       }
@@ -69,7 +69,7 @@ export default function GenrePage() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900">{movies.length} titles in "{genreName}"</h1>
+      <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900 dark:text-gray-100">{movies.length} titles in &quot;{genreName}&quot;</h1>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
         {movies.map((movie) => (
@@ -89,7 +89,7 @@ export default function GenrePage() {
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 md:px-4 py-2 text-sm md:text-base border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
           >
             ← Previous
           </button>
@@ -104,7 +104,7 @@ export default function GenrePage() {
                   className={`px-2 md:px-3 py-2 text-sm md:text-base border rounded-md transition-colors ${
                     page === currentPage
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'hover:bg-gray-50'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   {page}
@@ -119,7 +119,7 @@ export default function GenrePage() {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 md:px-4 py-2 text-sm md:text-base border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
           >
             Next →
           </button>

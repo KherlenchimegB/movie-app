@@ -11,30 +11,15 @@ import Link from "next/link";
 import SearchResults from "@/components/movieComponents/SearchResults";
 import Toast from "@/components/movieComponents/Toast";
 import { 
-  NavigationSkeleton, 
   HeroSkeleton, 
   MovieGridSkeleton, 
   CategoryTitleSkeleton 
 } from "@/components/movieComponents/Skeleton";
 
-const token =
-  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
+// TMDB API Token - Environment variable
+const token = process.env.NEXT_PUBLIC_TMDB_TOKEN || "";
 
-export type Movie = {
-  id: number;
-  title: string;
-  vote_average: number;
-  overview: string;
-  poster_path: string;
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: [];
-  video: boolean;
-  dates: {};
-  release_date: Date;
-  popularity: number;
-  original_language: string;
-};
+import { Movie } from '@/types/movie.types';
 
 type MovieResponse = {
   results: Movie[];
@@ -57,7 +42,6 @@ const SWR = () => {
   const [showToast, setShowToast] = useState(false); // New state for toast
   
   // Loading states
-  const [isLoading, setIsLoading] = useState(true);
   const [isHeroLoading, setIsHeroLoading] = useState(true);
   const [isPopularLoading, setIsPopularLoading] = useState(true);
   const [isUpcomingLoading, setIsUpcomingLoading] = useState(true);
@@ -72,10 +56,6 @@ const SWR = () => {
     total_pages: 0,
   });
   const [movieTopRatedData, setMovieTopRatedData] = useState<MovieResponse>({
-    results: [],
-    total_pages: 0,
-  });
-  const [movieGenresData, setMovieGenresData] = useState<MovieResponse>({
     results: [],
     total_pages: 0,
   });
@@ -106,8 +86,7 @@ const SWR = () => {
       if (data.total_results === 0 && query.trim()) {
         setShowToast(true);
       }
-    } catch (error) {
-      console.error('Search error:', error);
+    } catch {
       setSearchResults([]);
       if (query.trim()) {
         setShowToast(true);
@@ -128,21 +107,17 @@ const SWR = () => {
   // Handle search see more
   const handleSearchSeeMore = () => {
     try {
-      console.log('See more clicked for query:', searchQuery);
       
       // Search query-г localStorage-д хадгалах
       if (searchQuery && searchQuery.trim()) {
         localStorage.setItem('searchQuery', searchQuery);
         localStorage.setItem('searchResults', JSON.stringify(searchResults));
-        console.log('Search data saved to localStorage');
       }
       
       // Search page руу шилжих
       const searchUrl = `/search?q=${encodeURIComponent(searchQuery || '')}`;
-      console.log('Navigating to:', searchUrl);
       window.location.href = searchUrl;
-    } catch (error) {
-      console.error('Error in handleSearchSeeMore:', error);
+    } catch {
       alert('Алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -200,8 +175,8 @@ const SWR = () => {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => response.json())
-      .then((data) => {
-        setMovieGenresData(data);
+      .then(() => {
+        // Genre data is not used in this component
       });
   }, []);
 
@@ -212,15 +187,11 @@ const SWR = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log('Now Playing API Response:', data);
         setMovieNowPlayingData(data);
         setIsHeroLoading(false);
-        setIsLoading(false);
       })
-      .catch((error) => {
-        console.error('Now Playing API Error:', error);
+      .catch(() => {
         setIsHeroLoading(false);
-        setIsLoading(false);
       });
   }, []);
 
@@ -395,13 +366,12 @@ const SWR = () => {
   // Genre selection handler
   const handleGenreSelect = (genre: { id: number; name: string }) => {
     // Genre page руу шилжих
-    console.log('Homepage handleGenreSelect called:', genre); 
     window.location.href = `/genre/${genre.id}`;
   };
 
   // Default home page view
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <Navigation
         onSearch={handleSearch}
         onClear={handleClearSearch}
