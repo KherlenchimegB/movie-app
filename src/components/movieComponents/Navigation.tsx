@@ -15,14 +15,46 @@ interface NavigationProps {
 }
 
 const Navigation = ({
-  onSearch = () => {},
-  onClear = () => {},
+  onSearch,
+  onClear,
   isSearching = false,
   searchResults = [],
   searchQuery = '',
   showSearch = true,
-  onGenreSelect = () => {}
+  onGenreSelect
 }: NavigationProps = {}) => {
+  // Event handler функцуудыг дотор нь тодорхойлох
+  const handleSearch = (query: string) => {
+    if (onSearch) {
+      onSearch(query);
+    } else {
+      // Default behavior - search page руу шилжих
+      window.location.href = `/search?q=${encodeURIComponent(query)}`;
+    }
+  };
+
+  const handleClear = () => {
+    if (onClear) {
+      onClear();
+    }
+    // Default behavior - search query-г цэвэрлэх
+    if (typeof window !== 'undefined') {
+      const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = '';
+      }
+    }
+  };
+
+  const handleGenreSelect = (genre: { id: number; name: string }) => {
+    if (onGenreSelect) {
+      onGenreSelect(genre);
+    } else {
+      // Default behavior - genre page руу шилжих
+      window.location.href = `/genre/${genre.id}`;
+    }
+  };
+
   return (
     <div className="w-screen flex flex-col md:flex-row justify-between items-center h-auto md:h-[60px] px-4 py-3 md:py-0 gap-3 md:gap-0">
       <div className="flex items-center justify-between gap-1">
@@ -35,11 +67,11 @@ const Navigation = ({
         </button>
       </div>
       <div className="flex flex-col md:flex-row justify-between gap-3 md:gap-2 w-full md:w-auto">
-        <GenreDropdown onGenreSelect={onGenreSelect} />
+        <GenreDropdown onGenreSelect={handleGenreSelect} />
         {showSearch && (
           <SearchBar
-            onSearch={onSearch}
-            onClear={onClear}
+            onSearch={handleSearch}
+            onClear={handleClear}
             isSearching={isSearching}
             searchResults={searchResults}
             searchQuery={searchQuery}

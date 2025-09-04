@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;
-  onClear: () => void;
+  onSearch?: (query: string) => void;
+  onClear?: () => void;
   isSearching: boolean;
   searchResults: any[];
   searchQuery: string;
@@ -27,13 +27,20 @@ export default function SearchBar({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (localQuery.trim()) {
-      onSearch(localQuery.trim());
+      if (onSearch) {
+        onSearch(localQuery.trim());
+      } else {
+        // Default behavior - search page руу шилжих
+        window.location.href = `/search?q=${encodeURIComponent(localQuery.trim())}`;
+      }
     }
   };
 
   const handleClear = () => {
     setLocalQuery('');
-    onClear();
+    if (onClear) {
+      onClear();
+    }
   };
 
   return (

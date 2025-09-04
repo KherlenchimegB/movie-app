@@ -9,7 +9,7 @@ interface Genre {
 }
 
 interface GenreDropdownProps {
-  onGenreSelect: (genre: Genre) => void;
+  onGenreSelect?: (genre: Genre) => void;
 }
 
 const genres: Genre[] = [
@@ -39,7 +39,12 @@ export default function GenreDropdown({ onGenreSelect }: GenreDropdownProps) {
 
   const handleGenreClick = (genre: Genre) => {
     console.log('Genre clicked:', genre);
-    onGenreSelect(genre);
+    if (onGenreSelect) {
+      onGenreSelect(genre);
+    } else {
+      // Default behavior - genre page руу шилжих
+      window.location.href = `/genre/${genre.id}`;
+    }
     setIsOpen(false);
   };
 
