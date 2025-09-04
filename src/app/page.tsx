@@ -9,6 +9,13 @@ import {
 import MovieCarousel from "@/components/movieComponents/MovieCarousel";
 import Link from "next/link";
 import SearchResults from "@/components/movieComponents/SearchResults";
+import Toast from "@/components/movieComponents/Toast";
+import { 
+  NavigationSkeleton, 
+  HeroSkeleton, 
+  MovieGridSkeleton, 
+  CategoryTitleSkeleton 
+} from "@/components/movieComponents/Skeleton";
 
 const token =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNjdkOGJlYmQwZjRmZjM0NWY2NTA1Yzk5ZTlkMDI4OSIsIm5iZiI6MTc0MjE3NTA4OS4zODksInN1YiI6IjY3ZDc3YjcxODVkMTM5MjFiNTAxNDE1ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KxFMnZppBdHUSz_zB4p9A_gRD16I_R6OX1oiEe0LbE8";
@@ -47,6 +54,14 @@ const SWR = () => {
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showToast, setShowToast] = useState(false); // New state for toast
+  
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isHeroLoading, setIsHeroLoading] = useState(true);
+  const [isPopularLoading, setIsPopularLoading] = useState(true);
+  const [isUpcomingLoading, setIsUpcomingLoading] = useState(true);
+  const [isTopRatedLoading, setIsTopRatedLoading] = useState(true);
 
   const [moviePopularData, setMoviePopularData] = useState<MovieResponse>({
     results: [],
@@ -86,9 +101,17 @@ const SWR = () => {
       );
       const data = await response.json();
       setSearchResults(data.results || []);
+      
+      // Хэрэв үр дүн байхгүй бол toast харуулах
+      if (data.total_results === 0 && query.trim()) {
+        setShowToast(true);
+      }
     } catch (error) {
       console.error('Search error:', error);
       setSearchResults([]);
+      if (query.trim()) {
+        setShowToast(true);
+      }
     } finally {
       setIsSearching(false);
     }
@@ -99,6 +122,7 @@ const SWR = () => {
     setSearchQuery('');
     setSearchResults([]);
     setShowSearchResults(false);
+    setShowToast(false);
   };
 
   // Handle search see more
@@ -128,27 +152,37 @@ const SWR = () => {
     setShowSearchResults(false);
   };
 
+  // Close toast
+  const closeToast = () => {
+    setShowToast(false);
+  };
+
   useEffect(() => {
+    // Popular movies
     fetch(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=1`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => response.json())
       .then((data) => {
         setMoviePopularData(data);
+        setIsPopularLoading(false);
       });
   }, []);
 
   useEffect(() => {
+    // Upcoming movies
     fetch(`https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => response.json())
       .then((data) => {
         setMovieUpcomingData(data);
+        setIsUpcomingLoading(false);
       });
   }, []);
 
   useEffect(() => {
+    // Top rated movies
     fetch(
       `https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1`,
       { headers: { Authorization: `Bearer ${token}` } }
@@ -156,10 +190,12 @@ const SWR = () => {
       .then((response) => response.json())
       .then((data) => {
         setMovieTopRatedData(data);
+        setIsTopRatedLoading(false);
       });
   }, []);
 
   useEffect(() => {
+    // Genres
     fetch(`https://api.themoviedb.org/3/genre/movie/list?language=en`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -170,6 +206,7 @@ const SWR = () => {
   }, []);
 
   useEffect(() => {
+    // Now playing movies (Hero section)
     fetch(`https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -177,9 +214,13 @@ const SWR = () => {
       .then((data) => {
         console.log('Now Playing API Response:', data);
         setMovieNowPlayingData(data);
+        setIsHeroLoading(false);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error('Now Playing API Error:', error);
+        setIsHeroLoading(false);
+        setIsLoading(false);
       });
   }, []);
 
@@ -360,7 +401,7 @@ const SWR = () => {
 
   // Default home page view
   return (
-    <div className="flex flex-col gap-3 p-2 w-screen">
+    <div className="flex flex-col min-h-screen">
       <Navigation
         onSearch={handleSearch}
         onClear={handleClearSearch}
@@ -372,10 +413,24 @@ const SWR = () => {
       />
 
       {/* Hero section - Now Playing movies carousel */}
-      <MovieCarousel 
-        movies={movieNowPlayingData?.results?.slice(0, 3) || []}
-        title="Now Playing"
-      />
+      <div className="relative">
+        {isHeroLoading ? (
+          <HeroSkeleton />
+        ) : (
+          <MovieCarousel 
+            movies={movieNowPlayingData?.results?.slice(0, 3) || []}
+            title="Now Playing"
+          />
+        )}
+        
+        {/* Toast Notification - Overlay on top of hero section */}
+        <Toast
+          message={`No results found for "${searchQuery}". Please try a different search term.`}
+          isVisible={showToast}
+          onClose={closeToast}
+          type="warning"
+        />
+      </div>
 
       {/* Search results - overlay on top */}
       {showSearchResults && (
@@ -388,60 +443,84 @@ const SWR = () => {
       )}
 
       {/* Upcoming Movies Section */}
-      <div className="flex flex-col w-full border-none gap-8 md:gap-14 px-4 md:px-[80px]">
-        <MovieCategory 
-          title={"Upcoming"} 
-          onSeeMore={handleUpcomingSeeMore}
-        />
-        <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
-          {movieUpcomingData?.results?.slice(0, 10).map((movie) => (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              title={movie.title}
-              image={movie.poster_path}
-              rank={movie.vote_average}
-            />
-          ))}
-        </div>
+      <div className="flex flex-col w-full border-none gap-6 md:gap-8 lg:gap-14 px-4 md:px-8 lg:px-[80px] py-6 md:py-8">
+        {isUpcomingLoading ? (
+          <CategoryTitleSkeleton />
+        ) : (
+          <MovieCategory 
+            title={"Upcoming"} 
+            onSeeMore={handleUpcomingSeeMore}
+          />
+        )}
+        {isUpcomingLoading ? (
+          <MovieGridSkeleton count={10} />
+        ) : (
+          <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
+            {movieUpcomingData?.results?.slice(0, 10).map((movie) => (
+              <MovieCard
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                image={movie.poster_path}
+                rank={movie.vote_average}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Popular Movies Section */}
-      <div className="flex flex-col w-full border-none gap-8 md:gap-14 px-4 md:px-[80px]">
-        <MovieCategory 
-          title={"Popular"} 
-          onSeeMore={handlePopularSeeMore}
-        />
-        <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
-          {moviePopularData?.results?.slice(0, 10).map((movie) => (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              title={movie.title}
-              image={movie.poster_path}
-              rank={movie.vote_average}
-            />
-          ))}
-        </div>
+      <div className="flex flex-col w-full border-none gap-6 md:gap-8 lg:gap-14 px-4 md:px-8 lg:px-[80px] py-6 md:py-8">
+        {isPopularLoading ? (
+          <CategoryTitleSkeleton />
+        ) : (
+          <MovieCategory 
+            title={"Popular"} 
+            onSeeMore={handlePopularSeeMore}
+          />
+        )}
+        {isPopularLoading ? (
+          <MovieGridSkeleton count={10} />
+        ) : (
+          <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
+            {moviePopularData?.results?.slice(0, 10).map((movie) => (
+              <MovieCard
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                image={movie.poster_path}
+                rank={movie.vote_average}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Top Rated Movies Section */}
-      <div className="flex flex-col w-full border-none gap-8 md:gap-14 px-4 md:px-[80px]">
-        <MovieCategory 
-          title={"Top rated"} 
-          onSeeMore={handleTopRatedSeeMore}
-        />
-        <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
-          {movieTopRatedData?.results?.slice(0, 10).map((movie) => (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              title={movie.title}
-              image={movie.poster_path}
-              rank={movie.vote_average}
-            />
-          ))}
-        </div>
+      <div className="flex flex-col w-full border-none gap-6 md:gap-8 lg:gap-14 px-4 md:px-8 lg:px-[80px] py-6 md:py-8">
+        {isTopRatedLoading ? (
+          <CategoryTitleSkeleton />
+        ) : (
+          <MovieCategory 
+            title={"Top rated"} 
+            onSeeMore={handleTopRatedSeeMore}
+          />
+        )}
+        {isTopRatedLoading ? (
+          <MovieGridSkeleton count={10} />
+        ) : (
+          <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
+            {movieTopRatedData?.results?.slice(0, 10).map((movie) => (
+              <MovieCard
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                image={movie.poster_path}
+                rank={movie.vote_average}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <Footer />
