@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Navigation from '@/components/movieComponents/Navigation';
 import { Movie } from '@/types/movie.types';
@@ -9,7 +9,7 @@ import Footer from '@/components/movieComponents/Footer';
 import Toast from '@/components/movieComponents/Toast';
 import NoResults from '@/components/movieComponents/NoResults';
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   
@@ -245,5 +245,13 @@ export default function SearchPage() {
       
       <Footer />
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
