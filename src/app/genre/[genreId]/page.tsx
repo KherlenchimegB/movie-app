@@ -16,11 +16,21 @@ export default function GenrePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   // TMDB API Token - Environment variable
-  const token = process.env.NEXT_PUBLIC_TMDB_TOKEN || "";
+  // Client-side дээр environment variable-ууд runtime дээр ажиллахгүй байж болно
+  const getToken = () => {
+    return process.env.NEXT_PUBLIC_TMDB_TOKEN || '';
+  };
 
   useEffect(() => {
     const fetchGenreMovies = async () => {
-      if (!genreId || !token) return;
+      if (!genreId) return;
+
+      const token = getToken();
+      if (!token) {
+        console.error('TMDB API Token олдсонгүй. Environment variable шалгана уу.');
+        setIsLoading(false);
+        return;
+      }
 
       setIsLoading(true);
       try {
@@ -31,6 +41,11 @@ export default function GenrePage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        
+        if (!genreResponse.ok) {
+          throw new Error(`API алдаа: ${genreResponse.status}`);
+        }
+        
         const genreData = await genreResponse.json();
         const genre = genreData.genres?.find((g: { id: number; name: string }) => g.id.toString() === genreId);
         setGenreName(genre?.name || 'Genre');
@@ -42,17 +57,23 @@ export default function GenrePage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        
+        if (!response.ok) {
+          throw new Error(`API алдаа: ${response.status}`);
+        }
+        
         const data = await response.json();
         setMovies(data.results || []);
         setTotalPages(Math.min(data.total_pages || 0, 500));
-      } catch {
+      } catch (error) {
+        console.error('Жанрын кинонуудыг авах алдаа:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchGenreMovies();
-  }, [genreId, currentPage, token]);
+  }, [genreId, currentPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

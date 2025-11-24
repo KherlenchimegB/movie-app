@@ -21,7 +21,10 @@ function SearchPageContent() {
   const [showToast, setShowToast] = useState(false);
 
   // TMDB API Token - Environment variable
-  const token = process.env.NEXT_PUBLIC_TMDB_TOKEN || "";
+  // Client-side дээр environment variable-ууд runtime дээр ажиллахгүй байж болно
+  const getToken = () => {
+    return process.env.NEXT_PUBLIC_TMDB_TOKEN || '';
+  };
 
   // Жанрын жагсаалт
   const genres = [
@@ -61,6 +64,14 @@ function SearchPageContent() {
     const fetchSearchResults = async () => {
       if (!query) return;
 
+      const token = getToken();
+      if (!token) {
+        console.error('TMDB API Token олдсонгүй. Environment variable шалгана уу.');
+        setIsLoading(false);
+        setShowToast(true);
+        return;
+      }
+
       setIsLoading(true);
       try {
         const response = await fetch(
@@ -69,6 +80,11 @@ function SearchPageContent() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        
+        if (!response.ok) {
+          throw new Error(`API алдаа: ${response.status}`);
+        }
+        
         const data = await response.json();
         setMovies(data.results || []);
         setTotalPages(Math.min(data.total_pages || 0, 500));
@@ -78,7 +94,8 @@ function SearchPageContent() {
         if (data.total_results === 0 && query.trim()) {
           setShowToast(true);
         }
-      } catch {
+      } catch (error) {
+        console.error('Хайлтын алдаа:', error);
         setMovies([]);
         if (query.trim()) {
           setShowToast(true);
@@ -89,7 +106,7 @@ function SearchPageContent() {
     };
 
     fetchSearchResults();
-  }, [query, currentPage, token]);
+  }, [query, currentPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

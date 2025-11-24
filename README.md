@@ -51,5 +51,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
+### Vercel дээр Environment Variables тохируулах
+
+Vercel дээр deploy хийсний дараа дата ирэхгүй байвал environment variable тохируулаагүй байж болно. Дараах алхмуудыг дагана уу:
+
+1. Vercel Dashboard руу орох: [vercel.com](https://vercel.com)
+2. Project-оо сонгох
+3. **Settings** → **Environment Variables** хэсэгт орох
+4. Дараах environment variable нэмэх:
+   - **Name**: `NEXT_PUBLIC_TMDB_TOKEN`
+   - **Value**: TMDB API token-оо оруулах
+   - **Environment**: Production, Preview, Development гэсэн бүх орчинд нэмэх
+5. **Save** дарж хадгалах
+6. **Deployments** хэсэгт ороод **Redeploy** хийх (эсвэл дахин push хийх)
+
+**Анхаар**: Environment variable нэмсний дараа заавал redeploy хийх шаардлагатай!
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # movie-app

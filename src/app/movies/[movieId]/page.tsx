@@ -15,22 +15,42 @@ export default async function MovieDetails({
   params: Promise<{ movieId: string }>;
 }) {
   const { movieId } = await params;
+  
+  if (!token) {
+    throw new Error('TMDB API Token олдсонгүй. Environment variable шалгана уу.');
+  }
+  
   const responseCredit = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
+  
+  if (!responseCredit.ok) {
+    throw new Error(`API алдаа: ${responseCredit.status}`);
+  }
+  
   const dataCredit = await responseCredit.json();
 
   const responseDetails = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}?language=en-US`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
+  
+  if (!responseDetails.ok) {
+    throw new Error(`API алдаа: ${responseDetails.status}`);
+  }
+  
   const dataDetails = await responseDetails.json();
 
   const responseMoreLike = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}/similar?language=en-US&page=1`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
+  
+  if (!responseMoreLike.ok) {
+    throw new Error(`API алдаа: ${responseMoreLike.status}`);
+  }
+  
   const dataMoreLike = await responseMoreLike.json();
 
   const imgBaseUrl = "https://image.tmdb.org/t/p/w400";
